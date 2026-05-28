@@ -1,15 +1,25 @@
 import google.generativeai as genai
 import streamlit as st
 import os
+from dotenv import load_dotenv
+
+# LOAD LOCAL .env FILE
+
+load_dotenv()
 
 # GET API KEY
-# First tries Streamlit Cloud secrets
-# Then falls back to local .env / environment variables
+# Streamlit Cloud → st.secrets
+# Local PC → .env
 
-api_key = st.secrets.get(
-    "GOOGLE_API_KEY",
-    os.getenv("GOOGLE_API_KEY")
-)
+try:
+
+    api_key = st.secrets["GOOGLE_API_KEY"]
+
+except:
+
+    api_key = os.getenv(
+        "GOOGLE_API_KEY"
+    )
 
 # CONFIGURE GEMINI
 
@@ -58,9 +68,13 @@ CODE:
 
         return response.text
 
-    except:
+    except Exception as e:
 
-        return None
+        return f"""
+# AI Conversion Failed
+
+{str(e)}
+"""
 
 # AI EXPLAINER
 
@@ -94,15 +108,13 @@ Keep explanation concise.
 
         return response.text
 
-    except:
+    except Exception as e:
 
-        return """
+        return f"""
 AI explanation unavailable.
 
-Possible reasons:
-- Gemini quota exceeded
-- API unavailable
-- Internet issue
+Reason:
+{str(e)}
 """
 
 # HYBRID OPTIMIZER
@@ -141,6 +153,10 @@ RULE-BASED OUTPUT:
 
         return response.text
 
-    except:
+    except Exception as e:
 
-        return offline_converted_code
+        return f"""
+# Hybrid Optimization Failed
+
+{str(e)}
+"""
